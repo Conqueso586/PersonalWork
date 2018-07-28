@@ -81,7 +81,8 @@ public class BTree {
 
 	private void splitNode(BTreeNode x, int i)
 			throws IOException {
-
+		printTree();
+		
 		z = new BTreeNode();
 		BTreeNode y = DiskRead(x.childPointers[i]);
 		
@@ -130,7 +131,7 @@ public class BTree {
 		diskWrite(y);
 		diskWrite(z);
 		diskWrite(x);
-
+		printTree();
 	}
 
 	private int diskWrite(BTreeNode x) throws IOException {
@@ -213,11 +214,18 @@ public class BTree {
 		return null;
 	}
 	private Object traverseTree(BTreeNode x) throws IOException {
-		
+		System.out.println("Current Node: " + x.current);
+		System.out.println("Number of Keys: " + x.numKeys);
+		for(int i = 0; i < x.numKeys; i++){
+			System.out.println("Key#: "+ i + "key: " + x.keys[i].getKey());
+		}
+		if(!x.isLeaf){
 		for (int i = 0; i < x.childPointers.length; i++) {;
+		System.out.println("Children:" + x.childPointers[i]);
 		return traverseTree(DiskRead(x.childPointers[i]));	
 		}
-		return traverseTree(DiskRead(x.childPointers[x.childPointers.length - 1]));
+		}
+		return x;
 	}
 	
 	private String printDebugInfo(BTreeNode node) throws IOException{

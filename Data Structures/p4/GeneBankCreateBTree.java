@@ -148,18 +148,21 @@ public class GeneBankCreateBTree {
 		GeneBankCreateBTree btree = new GeneBankCreateBTree();
 		btree.assessArguments(args, btree);
 		try {
+			System.out.println("Degree: " + btree.getDegree() + " Seq Length: " + btree.getSequenceLength() + " File: " + btree.getFile() + " Output File: " + btree.getOutputfile());
 		BTree tree = new BTree(btree.getDegree(), btree.getOutputfile());
 		KeyMaker genKey = new KeyMaker(btree);
 		long key = genKey.getNextKey();
+		System.out.println(key);
 		while(key != -1){
 		TreeObject o = new TreeObject(key);
 		
 				 tree.insertNode(o);
 				 key = genKey.getNextKey();
 				 System.out.println(key);
-				 tree.printTree();
+				 
 				 
 		}
+		tree.printTree();
 		System.out.println("End of File");
 				 } catch (IOException e) {
 				 e.printStackTrace();
