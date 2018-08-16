@@ -4,7 +4,7 @@ import java.io.RandomAccessFile;
 
 public class BTree {
 	private int degree;
-	private BTreeNode root, s, r, z, child;
+	private BTreeNode root, s, r, z;
 	private int nodeCount, maxKeys = 0;
 	RandomAccessFile raf;
 	long nodeSize;
@@ -43,15 +43,24 @@ public class BTree {
 			s.isLeaf = false; // will have some children
 			s.numKeys = 0; // for now
 			s.childPointers[0] = r.current; // child is the old root node
-			splitNode(s, 0); // r is split
+			splitNode(s, 0, r); // r is split
 			insertNodeNonFull(s, o); // s is clearly not full
 		} else
 			insertNodeNonFull(r, o);
 	}
 
 	public void insertNodeNonFull(BTreeNode x, TreeObject o) throws IOException {
-		
+		boolean dup = false;
 		int i = x.numKeys - 1;
+		for(int a = 0; a < x.numKeys; a++){
+			if(x.keys[a].compareTo(o) == 0){
+				x.keys[a].increaseFrequency();
+				dup = true;
+				diskWrite(x);
+				break;
+			}
+		}
+		if(!dup){
 		if (x.isLeaf) {
 			 //shift everything over to the "right" up to the
 			 //point where the new key k should go
@@ -69,7 +78,7 @@ public class BTree {
 			i++;
 			BTreeNode child= DiskRead(x.childPointers[i]);
 			if (child.numKeys == maxKeys) {
-				splitNode(x, i);
+				splitNode(x, i, child);
 				if (o.compareTo(x.keys[i]) > 0) {
 					i++;
 				}
@@ -77,14 +86,14 @@ public class BTree {
 			insertNodeNonFull(DiskRead(x.childPointers[i]), o);
 		}
 	}
+}
 
 
-	private void splitNode(BTreeNode x, int i)
+	private void splitNode(BTreeNode x, int i, BTreeNode y)
 			throws IOException {
 		printTree();
 		
 		z = new BTreeNode();
-		BTreeNode y = DiskRead(x.childPointers[i]);
 		
 		nodeCount++; // We need to keep track of the amount of nodes.
 		z.current = nodeCount;
@@ -196,6 +205,9 @@ public class BTree {
 
 		return node;
 	}
+	public void WriteRoot(){
+		
+	}
 
 	private long nodeSize() {
 		int keyObjectSize = Long.BYTES + Integer.BYTES;
@@ -203,60 +215,63 @@ public class BTree {
 		int numPointers = 2 * degree;
 		int numKeys = 2 * degree - 1;
 		int current = Integer.BYTES;
-		int degreeSize = Integer.BYTES;
 
 		int size = (keyObjectSize * numKeys) + (pointer * numPointers)
 				 + current + 4 + 1;
 		return size;
 	}
 	public String printTree() throws IOException{
+		System.out.println("PRINTING TREE -----------------------------");
 		traverseTree(root);
 		return null;
 	}
 	private Object traverseTree(BTreeNode x) throws IOException {
-		System.out.println("Current Node: " + x.current);
-		System.out.println("Number of Keys: " + x.numKeys);
+		System.out.print("Current Node: " + x.current);
+		System.out.print("\t IsLeaf: " + x.isLeaf);
+		System.out.println("\t NumKeys: " + x.numKeys);
+		System.out.print("Keys: { ");
 		for(int i = 0; i < x.numKeys; i++){
-			System.out.println("Key#: "+ i + "key: " + x.keys[i].getKey());
+			System.out.print(x.keys[i].getKey() + " ");
 		}
+		System.out.println("}");
+		System.out.println();
 		if(!x.isLeaf){
-		for (int i = 0; i < x.childPointers.length; i++) {;
-		System.out.println("Children:" + x.childPointers[i]);
-		return traverseTree(DiskRead(x.childPointers[i]));	
+			System.out.print("Children: ");
+		for(int i = 0; i < x.childPointers.length; i++)
+			if(x.childPointers[i] != -1)System.out.print(x.childPointers[i] + ", ");
+		System.out.println();
+		System.out.println();
+		for (int i = 0; i < x.childPointers.length; i++) {
+			if(x.childPointers[i] != -1){
+				traverseTree(DiskRead(x.childPointers[i]));		
+			}
+		
 		}
 		}
 		return x;
-	}
-	
-	private String printDebugInfo(BTreeNode node) throws IOException{
-		TreeObject[] obj = node.keys;
-		System.out.println(obj.toString());
-		
-		
-		//Call the traversal and print to the travFile all the debug stuff.
-		return obj.toString();
 	}
 
 	/**
 	 * B-TREE-SEARCH(x, k) method from book
 	 * @return returns a TreeObject
+	 * @throws IOException 
 	 */
-//	public TreeObject bTreeSearch(BTreeNode x, TreeObject o) {
-//		
-//		int i = 0;
-//		while (i < x.numKeys && o.compareTo(x.keys[i]) > 0) {
-//			i++;
-//		}
-//		if (i < x.numKeys && o.compareTo(x.keys[i]) == 0) {
-//			return x.keys[i];
-//		} else if (x.isLeaf) {	
-//			return null;
-//		}
-//		else{
-//				BTreeNode child = DiskRead(x.childPointers[i]);
-//			    return bTreeSearch(child, o);
-//		}}
-//	}
+	public TreeObject bTreeSearch(BTreeNode x, TreeObject o) throws IOException {
+		
+		int i = 0;
+		while (i < x.numKeys && o.compareTo(x.keys[i]) > 0) {
+			i++;
+		}
+		if (i < x.numKeys && o.compareTo(x.keys[i]) == 0) {
+			return x.keys[i];
+		} else if (x.isLeaf) {	
+			return null;
+		}
+		else{
+				BTreeNode child = DiskRead(x.childPointers[i]);
+			    return bTreeSearch(child, o);
+		}
+	}
 	
 	
 /*	
@@ -329,15 +344,6 @@ public class BTree {
 			}
 			numKeys = 0;
 		}
-
-//		BTreeNode(int i) {
-//			keys = new TreeObject[2 * i - 1];
-//			childPointers = new int[2 * i];
-//			for(int j = 0; j < 2 * degree; j++){
-//				childPointers[j] = -1;
-//			}
-//			numKeys = 0;
-//		}
 
 		TreeObject getKeys(int i) {
 			return keys[i];

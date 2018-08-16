@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Scanner;
 
 class KeyMaker {
@@ -13,7 +12,7 @@ class KeyMaker {
 	private States state = States.START;
 	Scanner scan;
 	private String line;
-	private String key;
+	
 	private char ch;
 	
 	BTree tree;
@@ -53,8 +52,7 @@ class KeyMaker {
 		case SEQUENCE: {
 			String seq = sequence();
 			if(seq != ""){
-				key = "";
-				System.out.println(seq);
+				//System.out.println(seq);
 				return encode(seq);
 			}
 	
@@ -82,7 +80,7 @@ class KeyMaker {
 		return 0;
 	}
 	private void start(){
-		key = "";
+
 			while(scan.hasNextLine()){
 				line = scan.nextLine();
 			

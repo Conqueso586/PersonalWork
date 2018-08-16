@@ -152,13 +152,13 @@ public class GeneBankCreateBTree {
 		BTree tree = new BTree(btree.getDegree(), btree.getOutputfile());
 		KeyMaker genKey = new KeyMaker(btree);
 		long key = genKey.getNextKey();
-		System.out.println(key);
+	//	System.out.println(key);
 		while(key != -1){
 		TreeObject o = new TreeObject(key);
 		
 				 tree.insertNode(o);
 				 key = genKey.getNextKey();
-				 System.out.println(key);
+//				 System.out.println(key);
 				 
 				 
 		}
