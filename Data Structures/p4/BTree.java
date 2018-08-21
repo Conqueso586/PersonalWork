@@ -91,7 +91,7 @@ public class BTree {
 
 	private void splitNode(BTreeNode x, int i, BTreeNode y)
 			throws IOException {
-		printTree();
+		//printTree();
 		
 		z = new BTreeNode();
 		
@@ -140,9 +140,14 @@ public class BTree {
 		diskWrite(y);
 		diskWrite(z);
 		diskWrite(x);
-		printTree();
+		//printTree();
 	}
-
+	public void WriteRoot() throws IOException{
+		raf.seek(0);
+		raf.writeInt(degree);
+		raf.writeInt(root.current);
+	}
+	
 	private int diskWrite(BTreeNode x) throws IOException {
 
 		raf.seek(0);
@@ -204,9 +209,6 @@ public class BTree {
 		// Reading MetaData
 
 		return node;
-	}
-	public void WriteRoot(){
-		
 	}
 
 	private long nodeSize() {
@@ -361,6 +363,18 @@ public class BTree {
 				return false;
 			}
 		}
+	}
+
+
+	public BTreeNode getRoot() throws IOException {
+		raf.seek(0);
+		raf.readInt();
+		int rootNum = raf.readInt();
+		
+		
+			BTreeNode rootNode = DiskRead(rootNum);
+		
+		return rootNode;
 	}
 }
 

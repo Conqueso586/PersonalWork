@@ -12,11 +12,12 @@ public class GeneBankSearch {
 	public static final int C = 1; //01
 	public static final int G = 2; //10
 	public static final int T = 3; //11
-		
+	static StringBuilder debugMsges;
 	
 	public static void fail() {
-		System.err.println("java GeneBankCreateBTree <0/1(no/with Cache)> <btree file> <query file> " +
+		System.err.println("java GeneBankSearch <0/1(no/with Cache)> <btree file> <query file> " +
 												"[<cache size>] [<debug level>]");
+		System.err.println(debugMsges);
 		System.exit(0);
 	}
 	/**
@@ -27,13 +28,14 @@ public class GeneBankSearch {
 		int sequenceLength = 0;
 		int cacheSize = 0;
 		int numberToCompare = 0;
+		int degree = 0;
 		String queryName = null;
 		String BTreeFilename = null;
 		boolean fileRead = false;
 		boolean cache = false;
 		boolean debugLevelMode0 = true;
 		boolean debugLevelModeSet = false;
-		StringBuilder debugMsges = new StringBuilder();
+		debugMsges = new StringBuilder();
 		
 		//BTree test and checking command line arg
 		
@@ -56,6 +58,8 @@ public class GeneBankSearch {
 				BTreeFilename = args[1];
 				String[] c = BTreeFilename.split("\\.");
 				numberToCompare = Integer.parseInt(c[4]);
+				sequenceLength = numberToCompare;
+				degree = Integer.parseInt(c[5]);
 				debugMsges.append("The Sequence Size from Filename: " + numberToCompare + "\n");
 				
 				BTreeFile = new Scanner(new File(BTreeFilename));
@@ -69,7 +73,7 @@ public class GeneBankSearch {
 			try {
 				queryName = args[2];
 				if (queryName.length() > 5) {
-					String value = queryName.substring(5);
+					String value = queryName.substring(13);
 					sequenceLength = Integer.parseInt(value);
 					if (sequenceLength != numberToCompare) {
 						fail();
@@ -156,8 +160,7 @@ public class GeneBankSearch {
 		}
 		//Start timer
 		double startTime = System.nanoTime();
-		GeneBankCreateBTree g = new GeneBankCreateBTree();
-		BTree check = new BTree(g.getDegree(), g.getFile());
+		BTree check = new BTree(degree, new File(BTreeFilename));
 		//BTree check = new BTree(BTreeFilename);
 		//check.buildTree();
 		
@@ -177,9 +180,8 @@ public class GeneBankSearch {
 			while (tokenizer.hasMoreTokens()) {
 				searchWord = tokenizer.nextToken();
 				searchNumber = convertStringToLong(searchWord);
-				//result = check.bTreeSearch(check.getRoot(), searchNumber);
-				//need to pass in root not sure just calling btreesearch method or anything else.
-				// result = check.bTreeSearch();
+				result = check.bTreeSearch(check.getRoot(), new TreeObject(searchNumber));
+				
 				if (result != null) {
 					lastAnswer = convertBack1(result.getKey(), sequenceLength);
 					System.out.println(lastAnswer + ": " + result.getFreq());

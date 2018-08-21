@@ -94,17 +94,18 @@ public class GeneBankCreateBTree {
 				printUsage();
 				System.exit(0);
 			}
-			btree.setFile(new File(args[2]));
-			
-			btree.setOutputfile(new File(btree.getFile().getName() + ".btree.data." + btree.getSequenceLength() + "." + btree.getDegree()));
-
-			// Check sequence length
 			if (Integer.parseInt(args[3]) > 1 || Integer.parseInt(args[3]) < 31) {
 				btree.setSequenceLength(Integer.parseInt(args[3]));
 			} else {
 				printUsage();
 				System.exit(0);
 			}
+			btree.setFile(new File(args[2]));
+			
+			btree.setOutputfile(new File(btree.getFile().getName() + ".btree.data." + btree.getSequenceLength() + "." + btree.getDegree()));
+
+			// Check sequence length
+			
 
 			// Check Debug and Cache Size
 			if (args.length == 6 && btree.useCache == false) {
@@ -162,6 +163,7 @@ public class GeneBankCreateBTree {
 				 
 				 
 		}
+		tree.WriteRoot();
 		tree.printTree();
 		System.out.println("End of File");
 				 } catch (IOException e) {
